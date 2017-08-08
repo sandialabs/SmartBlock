@@ -1,0 +1,74 @@
+Dev notes for components Select, Magnitude, Histogram, Dim-reduce
+
+
+Template
+========
+A documented template component that illustrates
+the data input, partitioning, and output methods
+common to most SmartBlock components, for the purpose
+of providing a model on which to
+implement new components.
+Functionality-wise, template simply reads the input,
+copies it to a new array, and writes this array to
+output.
+
+Select - General
+================
+
+things to free: data_in, selection_inds, valid_data, 
+
+Select - Variables
+==================
+
+global_size: the size of the "splitting" dimension in the input array
+
+sel_points: array listing indices to be selected from data_in
+valid_data: the data, after filter
+
+
+dim_index: if ["D1", "D2", ... ] are the dimensions of the input array, in order,
+  then dim_index is the **position** of the dimension from which elements are to be
+  "selected".
+
+split_index: similar to the above, the the position of the dimension along which 
+  the data is to be split between the procs.
+
+getMasterIndex():
+  *** _arrdims is the number of dimensions in the input data
+  *** _oldDims is an array of the sizes of the dimensions of the input data
+  *** _positions is the array of the positions of the desired values in the "selected"
+      dimension in the input array
+  *** _newDimes is the array of the sizes of the dimensions of the output array
+  *** _l is the current index in the 1D representation of the input array (currently 
+      being operated on)
+
+  *** temp_inds is used to hold the 3D indices of the element in the input and
+      output arrays.
+
+
+Magnitude - Input/Output
+========================
+
+INPUT
+must be a 2D array. The first dimension spans the "particles," the other spans the components
+per particle (for example, vx, vy, vz components of velocity).
+Nota Bene: they MUST be in that order.
+
+
+in the input stream must also be "ntimestep", which is a uint64_t that represents the
+number of the timestep in the original simulation.
+
+uint64_t vars: global_size, mycount, mod, mysize, mystart, common_size, myoffset, totalsz
+
+Dim-Reduce
+=========================
+split_index: the index of the dimension of the input array along which it should be
+  partitioned between the readers. For a particle simulation, this is the dimension
+  that spans the number of particles.
+dim_reduce_index: the index of the dimension that is to disappear, "be absorbed" by
+  other.
+dim_grow_index: the index of the dimension that is to "absorb" the other dimension
+global_size: the global size of the dimension of the input array, in the dimension
+  along which the array is partitioned among reader procs.
+
+
